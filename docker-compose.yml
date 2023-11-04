@@ -1,0 +1,26 @@
+version: "3.4"
+
+services:
+
+  db:
+    image: dolthub/dolt-sql-server
+    ports:
+      - 82:3306
+    volumes:
+      - ./db/sql:/docker-entrypoint-initdb.d
+
+  api:
+    image: node:latest
+    volumes:
+      - ./api/bin:/app
+    environment:
+      - WAIT_HOSTS=db:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=60
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    command: /bin/sh -c "/wait && cd /app && npm install && node /app/server.js"
+    links:
+      - "db:db"
+    ports:
+      - 81:8000
+      - 443:443
